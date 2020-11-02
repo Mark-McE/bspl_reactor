@@ -20,7 +20,7 @@ defmodule Reactor.CheckerProxyWorker do
     socket = state[:socket]
     msg_json = Jason.encode!(msg_map)
 
-    :gen_udp.send(@socket, agent_host, agent_port, msg_json)
+    :gen_udp.send(socket, agent_host, agent_port, msg_json)
 
     {:reply, :ok, state}
   end
