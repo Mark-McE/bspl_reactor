@@ -20,10 +20,12 @@ defmodule Reactor do
       end
   """
 
-  defmacro __using__(opts) do
+  defmacro __using__(_opts) do
     port = System.get_env("BSPL_PORT") || "9990"
+    role = System.get_env("BSPL_ROLE") || "Packer"
     host = System.get_env("BSPL_CHECKER_HOST") || "localhost"
     c_port = System.get_env("BSPL_CHECKER_PORT") || "9992"
+    protocol_path = System.get_env("BSPL_PROTOCOL_PATH") || "priv/logistics.bspl"
 
     port = String.to_integer(port)
     host = String.to_charlist(host)
@@ -34,12 +36,12 @@ defmodule Reactor do
         roles: _,
         params: _,
         messages: messages
-      ]} = BSPL.Parser.parse!(opts[:protocol_path])
+      ]} = BSPL.Parser.parse!(protocol_path)
 
     reactor_module = Module.concat([BSPL, Protocols, Macro.camelize(protocol_name), Reactor])
 
     quote location: :keep, bind_quoted: [
-            opts: opts,
+            role: role,
             port: port,
             name: protocol_name,
             messages: Macro.escape(messages),
@@ -50,7 +52,7 @@ defmodule Reactor do
       @name name
       @port port
       @messages messages
-      @role opts[:role]
+      @role role
       @reactor_module reactor_module
       @checker_host checker_host
       @checker_port checker_port
