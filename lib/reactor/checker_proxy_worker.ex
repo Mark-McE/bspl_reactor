@@ -16,10 +16,17 @@ defmodule Reactor.CheckerProxyWorker do
     {:ok, %{socket: socket, checker_host: checker_host, checker_port: checker_port}}
   end
 
-  def handle_call({:send, {agent_host, agent_port}, msg_map}, _from, state) do
+  def handle_call({:send, agent, msg_map}, _from, state) do
     socket = state[:socket]
+    checker_host = state[:checker_host]
+    checker_port = state[:checker_port]
     msg_json = Jason.encode!(msg_map)
+    agent_host = System.get_env("BSPL_AGENT_#{agent}_HOST")
+    agent_port = System.get_env("BSPL_AGENT_#{agent}_PORT")
 
+    # send to my checker
+    :gen_udp.send(socket, checker_host, checker_port, msg_json)
+    # send to other agent's checker
     :gen_udp.send(socket, agent_host, agent_port, msg_json)
 
     {:reply, :ok, state}
